@@ -1,0 +1,128 @@
+ User Schema -
+ {
+  "userId": "string",
+  "name": "string",
+  "email": "string",
+  "profile":"string", {Admin , user}
+  "password": "string",
+  "address": {
+    "city": "string",
+    "state": "string",
+    "zipCode": "string",
+    "country": "string"
+  },
+  "phoneNumber": "string",
+  "wishlist": [
+    {
+      "wishlistId": "string",
+      "products": [
+        {
+          "productId": "string",
+        }
+      ]
+    }
+  ],
+  "orders": [
+    {
+      "orderId": "string",
+      "products": [
+                            {
+                            "productId": "string",
+                            "quantity": "number",
+                            "price": "number"
+                            }
+      ],
+      "payments": [
+                            {
+                            "paymentId": "string",
+                            "amount": "number",
+                            "paymentDate": "string",
+                            "paymentMethod": "string",
+                            "status": "string",
+                            }
+  ]
+      "orderDate": "string",
+      "status": "string",
+      "shippingAddress": {
+                            "city": "string",
+                            "state": "string",
+                            "zipCode": "string",
+                            "country": "string"
+                        }
+    }
+  ],
+  "cart": [
+        {
+        "cartItemId": "string",
+        "productId": "string",
+        "quantity": "number", 
+        }
+  ],
+  "createdAt": "dateTime"
+}
+
+
+
+ Product Schema -
+ {
+  "productId": "string",
+  "name": "string",
+  "description": "string",
+  "category": "string",
+  "brand": "string",
+  "price": "number",
+  "quantityAvailable": "number",
+  "images": ["string"],
+  "ratings": {
+    "average": "number",
+    "count": "number"
+  },
+  "reviews": [
+    {
+      "userId": "string",
+       "name": "string",
+      "rating": "number",
+      "comment": "string",
+    }
+  ],
+  "comments": [
+    {
+      "commentId": "string",
+      "userId": "string",
+       "name": "string",
+      "comment": "string"
+    }
+  ],
+    "createdAt": "dateTime"
+}
+
+
+// reset password 
+route.post("/resetPassword",async (req,res)=>{
+    try {
+        const {email , newPassword , oldPassword} = req.body
+
+        if(!email || !newPassword || !oldPassword)
+            return res.status(400).send("Email , newPassword or oldPassword is required.")
+
+        // find user email
+        const user = await User.findOne({email})
+        console.log("user ",user)
+
+        if(!user){
+            return res.status(400).send("User not found.")
+        }
+
+        // create new hash password
+        const hashNewPassword = await bcrypt.hash(newPassword , 10)
+        console.log("hashNewPassword",hashNewPassword)
+
+        // save new hash password
+        user.password = hashNewPassword
+        await user.save()
+        return res.status(200).send("User password reset successfully.")
+
+    } catch (error) {
+         return res.status(500).send(`Internal server error : ${error.message}`)
+    }
+})
